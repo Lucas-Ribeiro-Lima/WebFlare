@@ -1,0 +1,12 @@
+{
+  "name": "webserver",
+  "version": "0.1.0",
+  "main": "index.js",
+  "keywords": [],
+  "scripts": {
+
+  },
+  "author": "lucaslive974",
+  "license": "ISC",
+  "description": "A lightweight webserver inspired on Express"
+}
