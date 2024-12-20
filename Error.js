@@ -1,4 +1,7 @@
+import { GlobalError } from './GlobalError.js'
+
 export class ErrorRouter {
+  #globalError = new GlobalError()
   #errorHandlers = new Set()
 
   setErrorMiddleware(middleware) {
@@ -24,5 +27,11 @@ export class ErrorRouter {
     }
 
     next() 
+  }
+
+  controlErrorFlow(err, req, res) {
+    (!this.isErrorHandled())
+      ? this.#globalError.handle(err, req, res)
+      : this.handleErrorRouting(err, req, res)
   }
 }

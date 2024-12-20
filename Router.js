@@ -2,19 +2,23 @@ export class Router {
   #middlewares = new Set()
   #registeredRoutes = new Map()
   #subApps = new Map()
+  #errors
 
-  getRoute(path, method, next) {
+  constructor(errorHandlers) {
+    this.#errors = errorHandlers
+  }
+
+  getRoute(path, method ) {
     const route = this.#registeredRoutes.get(path)?.[method]
-    if (!route) next(new Error("Not Found"))
-    
+    if (!route) throw new Error("Not Found")
     return route
   }
 
-  setRoute({ path, method, routeCb }) {
+  setRoute({ path, method, routeArray }) {
     let route = this.#registeredRoutes.get(path)
     route = {
       ...route,
-      [method]: routeCb
+      [method]: new Set(routeArray),
     }
 
     this.#registeredRoutes.set(path, route)
@@ -28,38 +32,47 @@ export class Router {
     this.#middlewares.add(middleware)
   }
 
-  getMiddlewareIterator() {
-    return this.#middlewares.values()
+  getMiddlewareIterator(middlewares) {
+    return (middlewares ?? this.#middlewares).values()
   }
 
-  handleSubAppRouting(request, response) {
-    let isHandled = false
+  handleRequest(req, res) {
+    this.handleMiddlewares(req, res) ||
+    this.handleSubRoutes(req, res) ||
+    this.handleRoute(req, res)
+  }
 
-    for(const [ path, subApp ] of this.#subApps) {
-      if(!request.basePath.startsWith(path)) continue
+  handleMiddlewares(req, res, routeArray) {
+    const iterator = this.getMiddlewareIterator(routeArray)
+
+    const next = (err) => {
+      if(err) {
+        return this.#errors.controlErrorFlow(err, req, res)
+      }
+      const { value: middleware, done } = iterator.next()
+      if(done) return
+
+      middleware(req, res, next)
+    }
+
+    next()
+  }
+  
+  handleRoute(request, response) {
+    const routeArray = this.getRoute(request.basePath, request?.method)
+    this.handleMiddlewares(request, response, routeArray)
+  }
+
+  handleSubRoutes(request, response) {
+    for (const [path, subApp] of this.#subApps) {
+      if (!request.basePath.startsWith(path)) continue
 
       request.basePath = request.basePath.replace(path, "")
 
       subApp.emit("request", request, response)
-      isHandled = true
+      return true
     }
 
-    return isHandled
-  }
-
-  handleAppRouting(request, response) {
-    const iterator = this.getMiddlewareIterator()
-    const next = (err) => {
-      if(err) throw err
-      
-      const { value: middleware, done } = iterator.next()
-      if (done) {
-        const route = this.getRoute(request.basePath, request?.method, next)
-        route(request, response)
-        return
-      }
-      middleware(request, response, next)
-    }
-    next()
+    return false
   }
 }

@@ -1,19 +1,22 @@
 import { createServer } from 'http'
-import { Router } from './Router.js'
 import { ErrorRouter } from './Error.js'
+import { Router } from './Router.js'
 import { Utils } from './utils.js'
-import { GlobalError } from './GlobalError.js'
 
 export class WebServer {
-  #globalError = new GlobalError()
-  #router = new Router()
-  #utils = new Utils()
   _errorRouter = new ErrorRouter()
+  #router = new Router(this._errorRouter)
+  #utils = new Utils()
+
 
   constructor() {
-    this.server = createServer(async (req, res) => {  
-      [ req, res ] = this.#utils.populateHttpObject(req, res)
-      await this.#controlRequestFlow(req, res)    
+    this.server = createServer((req, res) => {
+      [req, res] = this.#utils.populateHttpObject(req, res)
+      try {
+        this.#router.handleRequest(req, res)
+      } catch (err) {
+        this._errorRouter.controlErrorFlow(err, req, res)
+      }
     })
   }
 
@@ -23,15 +26,15 @@ export class WebServer {
       : this.#setMiddleware(pathOrMiddleware)
   }
 
-  router() { 
-    return new SubWebServer(this._errorRouter)
+  router() {
+    return new SubWebServer()
   }
 
-  get(path, routeCb) {
+  get(path, ...routeArray) {
     this.#router.setRoute({
       path,
       method: "GET",
-      routeCb
+      routeArray,
     })
   }
 
@@ -72,27 +75,10 @@ export class WebServer {
       ? this._errorRouter.setErrorMiddleware(middleware)
       : this.#router.setMiddleware(middleware)
   }
-
-  #controlRequestFlow(req, res) {
-    try {
-      if(!this.#router.handleSubAppRouting(req, res)) {
-        this.#router.handleAppRouting(req, res)
-      }
-    } catch (err) {
-      this.#controlErrorFlow(err, req, res)
-    }
-  }
-
-  #controlErrorFlow(err, req, res) {
-    (!this._errorRouter.isErrorHandled())
-      ? this.#globalError.handle(err, req, res)
-      : this._errorRouter.handleErrorRouting(err, req, res)
-  }
 }
 
 class SubWebServer extends WebServer {
-  constructor(errorRouter) {
+  constructor() {
     super()
-    this._errorRouter = errorRouter
   }
 }
