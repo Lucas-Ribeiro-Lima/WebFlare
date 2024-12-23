@@ -1,13 +1,13 @@
 {
-  "name": "webserver",
+  "name": "webflare",
   "version": "0.8.0",
-  "description": "A lightweight and extensible web server inspired by Express.js, designed for simplicity and performance.",
+  "description": "A lightweight and extensible http server inspired by Express.js, designed for simplicity and performance.",
   "main": "index.js",
   "scripts": {
     "start": "node index.js"
   },
   "keywords": [
-    "webserver",
+    "WebFlare",
     "http",
     "express",
     "lightweight",
@@ -20,12 +20,12 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Lucas-Ribeiro-Lima/WebServer.git"
+    "url": "https://github.com/Lucas-Ribeiro-Lima/WebFlare.git"
   },
   "bugs": {
-    "url": "https://github.com/Lucas-Ribeiro-Lima/WebServer/issues"
+    "url": "https://github.com/Lucas-Ribeiro-Lima/WebFlare/issues"
   },
-  "homepage": "https://github.com/Lucas-Ribeiro-Lima/WebServer#readme",
+  "homepage": "https://github.com/Lucas-Ribeiro-Lima/WebFlare#readme",
   "engines": {
     "node": ">=23.1.0"
   }
