@@ -52,6 +52,14 @@ export class WebServer {
     })
   }
 
+  put(path, routeCb) {
+    this._router.setRoute({
+      path,
+      method: "PUT",
+      routeCb
+    })
+  }
+
   delete(path, routeCb) {
     this._router.setRoute({
       path,

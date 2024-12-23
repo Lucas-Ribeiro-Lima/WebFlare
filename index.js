@@ -8,7 +8,7 @@ export const Router = () => {
   return new WebServer()
 }
 
-export const ServerStatic = (directory) => {
+export const ServeStatic = (directory) => {
   return async (req, res, next) => {
     if (!req.basePath.startsWith(directory)) {
       return next()
