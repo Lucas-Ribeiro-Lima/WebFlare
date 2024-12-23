@@ -1,78 +1,89 @@
 export class Router {
-  #middlewares = new Set()
-  #registeredRoutes = new Map()
-  #subApps = new Map()
-  #errors
+  _middlewares = new Set()
+  _registeredRoutes = new Map()
+  _subApps = new Map()
+  _errors
 
   constructor(errorHandlers) {
-    this.#errors = errorHandlers
+    this._errors = errorHandlers
   }
 
   getRoute(path, method ) {
-    const route = this.#registeredRoutes.get(path)?.[method]
+    const route = this._registeredRoutes.get(path)?.[method]
     if (!route) throw new Error("Not Found")
     return route
   }
 
   setRoute({ path, method, routeArray }) {
-    let route = this.#registeredRoutes.get(path)
+    let route = this._registeredRoutes.get(path)
     route = {
       ...route,
       [method]: new Set(routeArray),
     }
 
-    this.#registeredRoutes.set(path, route)
+    this._registeredRoutes.set(path, route)
+  }
+
+  setErrorRouter(router) {
+    this._errors = router
   }
 
   setSubApp(path, app) {
-    this.#subApps.set(path, app)
+    this._subApps.set(path, app)
   }
 
   setMiddleware(middleware) {
-    this.#middlewares.add(middleware)
+    this._middlewares.add(middleware)
   }
 
   getMiddlewareIterator(middlewares) {
-    return (middlewares ?? this.#middlewares).values()
+    return (middlewares ?? this._middlewares).values()
   }
 
-  handleRequest(req, res) {
-    this.handleMiddlewares(req, res) ||
-    this.handleSubRoutes(req, res) ||
+  async handleRequest(req, res) {
+    if (await this.handleMiddlewares(req, res)) return
+
+    if (await this.handleSubRoutes(req, res)) return
+
     this.handleRoute(req, res)
   }
 
-  handleMiddlewares(req, res, routeArray) {
+  async handleMiddlewares(req, res, routeArray) {
     const iterator = this.getMiddlewareIterator(routeArray)
 
-    const next = (err) => {
+    const next = async (err) => {
       if(err) {
-        return this.#errors.controlErrorFlow(err, req, res)
+        return this._errors.controlErrorFlow(err, req, res)
       }
       const { value: middleware, done } = iterator.next()
-      if(done) return
+      if(done) return false
 
-      middleware(req, res, next)
-    }
+      if(!res.writableEnded) {
+        try {
+          await middleware(req, res, next)
+        } catch (err) {
+          next(err)
+        }
+      }
+    } 
 
-    next()
+    return await next()
   }
   
-  handleRoute(request, response) {
-    const routeArray = this.getRoute(request.basePath, request?.method)
-    this.handleMiddlewares(request, response, routeArray)
+  handleRoute(req, res) {
+    const routeArray = this.getRoute(req.basePath, req?.method)
+    this.handleMiddlewares(req, res, routeArray)
   }
 
-  handleSubRoutes(request, response) {
-    for (const [path, subApp] of this.#subApps) {
-      if (!request.basePath.startsWith(path)) continue
+  async handleSubRoutes(req, res) {
+    for (const [path, subApp] of this._subApps) {
+      if (!req.basePath.startsWith(path)) continue
 
-      request.basePath = request.basePath.replace(path, "")
+      req.basePath = req.basePath.replace(path, "")
 
-      subApp.emit("request", request, response)
+      subApp.emit("request", req, res)
       return true
     }
-
-    return false
+    return res.writableEnded
   }
 }

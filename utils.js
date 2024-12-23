@@ -25,11 +25,22 @@ export function Utils() {
 
     populatedRes.send = (statusCode, data) => {
       populatedRes.statusCode = statusCode
-      populatedRes.write(data)
+      populatedRes.write(parseResponse(data))
       populatedRes.end()
     }
     return populatedRes
   }
+
+  function parseResponse(data) {
+    if(Buffer.isBuffer(data)) {
+      return data.toString()
+    }
+    if(typeof data === "object") {
+      return JSON.stringify(data)
+    }
+    return data
+  }
+
   
   function handlePath(url) {
     const [ path, listOfParams ] = url.split("?")

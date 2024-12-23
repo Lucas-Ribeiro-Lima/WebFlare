@@ -1,19 +1,18 @@
 import { createServer } from 'http'
-import { ErrorRouter } from './Error.js'
 import { Router } from './Router.js'
+import { ErrorRouter } from './Error.js'
 import { Utils } from './utils.js'
 
 export class WebServer {
+  _utils = new Utils()
   _errorRouter = new ErrorRouter()
-  #router = new Router(this._errorRouter)
-  #utils = new Utils()
-
+  _router = new Router(this._errorRouter)
 
   constructor() {
-    this.server = createServer((req, res) => {
-      [req, res] = this.#utils.populateHttpObject(req, res)
+    this.server = createServer(async (req, res) => {
+      [req, res] = this._utils.populateHttpObject(req, res)
       try {
-        this.#router.handleRequest(req, res)
+        await this._router.handleRequest(req, res)
       } catch (err) {
         this._errorRouter.controlErrorFlow(err, req, res)
       }
@@ -21,17 +20,16 @@ export class WebServer {
   }
 
   use(pathOrMiddleware, subApp) {
-    (subApp)
-      ? this.#router.setSubApp(pathOrMiddleware, subApp)
-      : this.#setMiddleware(pathOrMiddleware)
-  }
-
-  router() {
-    return new SubWebServer()
+    if(subApp) {
+      subApp._setErrorRouter(this._errorRouter)
+      this._router.setSubApp(pathOrMiddleware, subApp)
+      return
+    }
+    this._setMiddleware(pathOrMiddleware)
   }
 
   get(path, ...routeArray) {
-    this.#router.setRoute({
+    this._router.setRoute({
       path,
       method: "GET",
       routeArray,
@@ -39,7 +37,7 @@ export class WebServer {
   }
 
   post(path, routeCb) {
-    this.#router.setRoute({
+    this._router.setRoute({
       path,
       method: "POST",
       routeCb
@@ -47,7 +45,7 @@ export class WebServer {
   }
 
   patch(path, routeCb) {
-    this.#router.setRoute({
+    this._router.setRoute({
       path,
       method: "PATCH",
       routeCb
@@ -55,7 +53,7 @@ export class WebServer {
   }
 
   delete(path, routeCb) {
-    this.#router.setRoute({
+    this._router.setRoute({
       path,
       method: "DELETE",
       routeCb
@@ -70,15 +68,13 @@ export class WebServer {
     return this.server.listen(port, listenCb)
   }
 
-  #setMiddleware(middleware) {
+  _setMiddleware(middleware) {
     (middleware.length === 4)
       ? this._errorRouter.setErrorMiddleware(middleware)
-      : this.#router.setMiddleware(middleware)
+      : this._router.setMiddleware(middleware)
   }
-}
 
-class SubWebServer extends WebServer {
-  constructor() {
-    super()
+  _setErrorRouter(router) {
+    this._router.setErrorRouter(router)
   }
 }
