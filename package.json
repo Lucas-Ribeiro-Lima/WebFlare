@@ -1,12 +1,32 @@
 {
   "name": "webserver",
-  "version": "0.1.0",
+  "version": "0.8.0",
+  "description": "A lightweight and extensible web server inspired by Express.js, designed for simplicity and performance.",
   "main": "index.js",
-  "keywords": [],
   "scripts": {
-
+    "start": "node index.js"
   },
-  "author": "lucaslive974",
-  "license": "ISC",
-  "description": "A lightweight webserver inspired on Express"
+  "keywords": [
+    "webserver",
+    "http",
+    "express",
+    "lightweight",
+    "framework",
+    "nodejs",
+    "router",
+    "middleware"
+  ],
+  "author": "LucasLive974 lucasribeirolima974@gmail.com",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Lucas-Ribeiro-Lima/WebServer.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Lucas-Ribeiro-Lima/WebServer/issues"
+  },
+  "homepage": "https://github.com/Lucas-Ribeiro-Lima/WebServer#readme",
+  "engines": {
+    "node": ">=23.1.0"
+  }
 }
