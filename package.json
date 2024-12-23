@@ -1,6 +1,6 @@
 {
   "name": "webflare",
-  "version": "0.8.0",
+  "version": "0.8.1",
   "description": "A lightweight and extensible http server inspired by Express.js, designed for simplicity and performance.",
   "main": "index.js",
   "scripts": {

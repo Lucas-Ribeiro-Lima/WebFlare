@@ -1,11 +1,11 @@
 import { readFile } from 'node:fs/promises'
 import { join } from 'node:path'
-import { WebServer } from './WebServer.js'
+import { WebFlare } from './WebFlare.js' 
 
-export const createApp = () => new WebServer()
+export const createApp = () => new WebFlare()
 
 export const Router = () => {
-  return new WebServer()
+  return new WebFlare()
 }
 
 export const ServeStatic = (directory) => {

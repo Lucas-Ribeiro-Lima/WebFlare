@@ -2,9 +2,9 @@
 
 A lightweight and extensible web server inspired by Express.js, designed for simplicity and performance.
 
-![npm](https://img.shields.io/npm/v/webserver) 
-![license](https://img.shields.io/github/license/Lucas-Ribeiro-Lima/WebServer) 
-![contributors](https://img.shields.io/github/contributors/Lucas-Ribeiro-Lima/WebServer)
+![npm](https://img.shields.io/npm/v/webflare) 
+![license](https://img.shields.io/github/license/Lucas-Ribeiro-Lima/WebFlare) 
+![contributors](https://img.shields.io/github/contributors/Lucas-Ribeiro-Lima/WebFlare)
 ---
 
 ## Features
@@ -22,17 +22,17 @@ A lightweight and extensible web server inspired by Express.js, designed for sim
 To install this package, use npm:
 
 ```bash
-npm install webserver
+npm install webflare
 ```
 
 ---
 
 ## Usage
 
-Here’s an example of how to use the `WebServer`:
+Here’s an example of how to use the `WebFlare`:
 
 ```javascript
-const { createApp, Router, ServeStatic } = require('webserver');
+const { createApp, Router, ServeStatic } = require('webflare');
 
 const app = createApp();
 
