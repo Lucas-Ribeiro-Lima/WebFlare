@@ -1,9 +1,9 @@
 import { createServer } from 'http'
-import { Router } from './Router.js'
-import { ErrorRouter } from './Error.js'
-import { Utils } from './utils.js'
+import { Router } from 'Webflare/Router.js'
+import { ErrorRouter } from 'Webflare/Error.js'
+import { Utils } from 'Webflare/utils.js'
 
-export class WebServer {
+export class WebFlare {
   _utils = new Utils()
   _errorRouter = new ErrorRouter()
   _router = new Router(this._errorRouter)
